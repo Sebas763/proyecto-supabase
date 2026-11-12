@@ -107,8 +107,8 @@
 
   <script>
     // ===== PASO 4: datos de conexión (Supabase → Connect o Project Settings → API Keys) =====
-    const SUPABASE_URL = 'https://xxxxxxxx.supabase.co';
-    const SUPABASE_KEY = 'pegar-aquí-la-publishable-key';
+    const SUPABASE_URL = 'https://vhqjfzvmfxzipophgubs.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_-WXj4PUt48mACqv8oyj2VQ_ugFtrfI_';
 
     // No se llama "supabase" porque ese nombre ya lo usa la librería
     const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -116,19 +116,37 @@
     const formulario = document.getElementById('formulario');
     const selectCategoria = document.getElementById('filtro');
 
-    // ===== PASO 5: consultar los productos =====
+    // ===== PASO 5 y PASO 7: consultar los productos (con filtro opcional) =====
     async function cargarProductos() {
-      // TODO paso 5: borra la línea de abajo y escribe aquí la consulta a la tabla "productos"
-      mostrarError('Falta completar el paso 5 (función cargarProductos).');
+      let consulta = cliente
+        .from('productos')
+        .select('*')
+        .order('id');
 
-      // TODO paso 7 (opcional): filtrar por categoría con .eq()
+      if (selectCategoria.value !== 'Todas') {
+        consulta = consulta.eq('categoria', selectCategoria.value);
+      }
+
+      const { data, error } = await consulta;
+
+      if (error) { mostrarError(error); return; }
+      pintarTabla(data);
     }
 
     // ===== PASO 6: insertar un producto =====
     async function agregarProducto(evento) {
       evento.preventDefault();
-      // TODO paso 6: borra la línea de abajo, arma el objeto "nuevo" con los datos del formulario e insértalo
-      mostrarError('Falta completar el paso 6 (función agregarProducto).');
+      const nuevo = {
+        nombre: formulario.nombre.value,
+        precio: Number(formulario.precio.value),
+        categoria: formulario.categoria.value
+      };
+
+      const { error } = await cliente.from('productos').insert(nuevo);
+
+      if (error) { mostrarError(error); return; }
+      formulario.reset();
+      cargarProductos();
     }
 
     // ===== Funciones de apoyo (no tienen que ver con Supabase) =====
